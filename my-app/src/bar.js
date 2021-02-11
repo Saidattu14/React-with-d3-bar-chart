@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState,useEffect} from 'react'
+import {useState,useEffect,useCallback} from 'react'
 import * as d3 from "d3";
 import './App.css'
 
@@ -313,70 +313,8 @@ const url = 'https://charttestdata.kmaltsev.repl.co';
 //       1612508996
 //   ]
 // ];
- 
-
-const BarChart = () => {
-   
-  const [data,setData] = useState([]);
-  const [val,setVal] = useState(false);
-  const getData = () => {
-      
-      if(val === false) {
-       
-    setTimeout( async() => {
-
-      const fetch_data = await fetch(url);
-      const data1= await fetch_data.json();
-    
-    //   const data = sample;
-      setVal(true);
-      setData(data1);
-     
-      let mySet = new Set()
-      for(var x in data)
-      {
-         mySet.add(data[x][0])
-      }
-      console.log(mySet)
-      var dict = [];
-      for (var it = mySet.values(), val = null; val=it.next().value;) 
-      {
-          x = 0;
-          let count = 0;
-         for(var y in data)
-         {
-           if(data[y][0] === val)
-           {
-               count = count + 1;
-           }
-         }
-         dict.push({
-          key:   val,
-          value: count
-      });
-      }
-      console.log(dict);
-      Chart(dict);
-
-     
-     
-
-
-    }, 3000);
-   
-  
-
-
-
-
-  }
-
-    }
-
-
 const Chart = (dict) => {
   
-
   const svg = d3.select('svg');
  
   const margin = 80;
@@ -435,33 +373,102 @@ Svg.selectAll("g")
 
 }
 
+const BarChart = () => {
+   
+  const [data,setData] = useState([]);
+  const [val,setVal] = useState(false);
+  
+
+    const getData = useCallback(() => {
+      if(val === false) {
+       
+        setTimeout(async() => {
+    
+          const fetch_data = await fetch(url);
+          const data= await fetch_data.json();
+        //   const data = sample;
+          setVal(true);
+          setData(data);
+          
+          let mySet = new Set()
+          for(var x in data)
+          {
+             mySet.add(data[x][0])
+          }
+          console.log(mySet)
+          var dict = [];
+          for (var it = mySet.values(), val = null; val=it.next().value;) 
+          {
+              x = 0;
+              let count = 0;
+             for(var y in data)
+             {
+               if(data[y][0] === val)
+               {
+                   count = count + 1;
+               }
+             }
+             dict.push({
+              key:   val,
+              value: count
+          });
+          }
+          console.log(dict);
+          if(dict.length !== 0)
+          {
+            Chart(dict);
+           
+          }
+         
+    
+         
+         
+    
+    
+        }, 3000);
+       
+    
+      }
+      
+    }, [val])
+
 
     
- 
     useEffect(() => {
         const val = false;
         setVal(val);
-          getData();
+        getData();
     
-    },);
-    
+    },[getData,val]);
+    if(val === true)
+    {
+      return (
+        <div></div>
+      )
+    }
+    if (val === false)
+    {
+      if(data.length === 0)
+      {
+        return (
+          <div>Loading</div>
+        )
+      }
+     
 
-    
-    return(
-        <div> Welcome to d3 chart
-        {val   || <div> <body>
+      return (
+        <div> <body>
             <svg width="700" height="240">
                 <g id="wrapper" transform="translate(40, 20)">
                 </g>
             </svg>
         </body></div>
        
-        }
-        
-        </div>
-        
-       
-    )
+
+      )
+    }
+
+    
+    
 }
   export default BarChart;
-
